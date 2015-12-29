@@ -7,14 +7,20 @@
 //
 
 #import "ViewController.h"
+#include <stdio.h>
+#include <string.h>
 
 @interface ViewController (){
     NSArray *allWords;
+    
+    BOOL isGridValid;
+    
 }
 
 @property (weak, nonatomic) IBOutlet UITextField *textfieldEnter;
 
 - (IBAction)checkForWordExistance:(id)sender;
+- (IBAction)testGrid:(id)sender;
 
 @end
 
@@ -22,6 +28,9 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    
+    isGridValid = NO;
+    
     
     NSString *pathName = [[NSBundle mainBundle] pathForResource:@"WordBank" ofType:@"csv"];  /// fill in the file's pathname
     NSFileManager *fm = [NSFileManager defaultManager];
@@ -41,7 +50,7 @@
 }
 
 - (IBAction)checkForWordExistance:(id)sender {
-
+    
     
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF like[cd] %@", _textfieldEnter.text];
     NSArray *results = [allWords filteredArrayUsingPredicate:predicate];
@@ -71,25 +80,92 @@
         }
         else
         {
-         
-        
+            
+            
         }
         
     });
     
 }
 
-// Method to check the word  from  apple native libraray iOS
+- (IBAction)testGrid:(id)sender {
+    
+//    NSString *gridText = @"tacfredft";
+    
+    if (_textfieldEnter.text.length == 0) {
+        return;
+    }
 
-
--(BOOL) isDictionaryWord:(NSString*) word
-{
-    UITextChecker *checker = [[UITextChecker alloc] init];
-    NSLocale *currentLocale = [NSLocale currentLocale];
-    NSString *currentLanguage = [currentLocale objectForKey:NSLocaleLanguageCode];
-    NSRange searchRange = NSMakeRange(0, [word length]);
-    NSRange misspelledRange = [checker rangeOfMisspelledWordInString:word range: searchRange startingAt:0 wrap:NO language: currentLanguage ];
-    return misspelledRange.location == NSNotFound;
+    NSString *gridText = _textfieldEnter.text;
+    NSString * subString;
+    NSUInteger toTestLength = gridText.length ;
+    
+    
+    for (int j = 0 ; j < gridText.length; j++) {
+        
+        
+        for (int i = 0; i <= toTestLength; i++ ) {
+            
+            
+            subString = [gridText substringWithRange:NSMakeRange(j, i)];
+            const char* utf8String = [subString UTF8String];
+            size_t len = strlen(utf8String) + 1;
+            char mac [len];
+            memcpy(mac, utf8String, len);
+            NSInteger n = strlen(mac);
+            
+            if (!isGridValid) {
+                [self getAllPossibleStrings:mac length:0 range:n-1];
+            }
+            
+        }
+        toTestLength --;
+    }
 }
+
+
+
+
+-(void)getAllPossibleStrings:(char *)a length:(int)l range:(NSInteger)r {
+    
+    int i;
+    if (l == r){
+        printf("%s\n", a);
+        NSString *wordToCheck = [NSString stringWithFormat:@"%s", a];
+        if (wordToCheck.length > 1) {
+            
+            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF like[cd] %@", [NSString stringWithFormat:@"%@", wordToCheck]];
+            NSArray *results = [allWords filteredArrayUsingPredicate:predicate];
+            
+            if (results.count > 0) {
+                NSLog(@"Grid Is Valid !!!!!!");
+                isGridValid = YES;
+                return;
+            }
+        }
+    }
+    
+    else
+    {
+        for (i = l; i <= r; i++)
+        {
+            swap((a+l), (a+i));
+            
+            [self getAllPossibleStrings:a length:l+1 range:r];
+            swap((a+l), (a+i)); //backtrack
+        }
+    }
+    
+}
+
+void swap(char *x, char *y)
+{
+    char temp;
+    temp = *x;
+    *x = *y;
+    *y = temp;
+}
+
+
 
 @end
