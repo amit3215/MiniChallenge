@@ -1,4 +1,4 @@
-//
+﻿//
 //  AppDelegate.h
 //  DictionaryTest
 //
@@ -11,6 +11,8 @@
 @interface AppDelegate : UIResponder <UIApplicationDelegate>
 
 @property (strong, nonatomic) UIWindow *window;
+
+// Commit by manish
 
 
 @end
